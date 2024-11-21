@@ -5,6 +5,12 @@ package edu.farmingdale.draganddropanim_demo
 import android.content.ClipData
 import android.content.ClipDescription
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateIntOffsetAsState
+import androidx.compose.animation.core.repeatable
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -21,11 +27,16 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Face
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -34,21 +45,25 @@ import androidx.compose.ui.draganddrop.DragAndDropEvent
 import androidx.compose.ui.draganddrop.DragAndDropTarget
 import androidx.compose.ui.draganddrop.DragAndDropTransferData
 import androidx.compose.ui.draganddrop.mimeTypes
-import androidx.compose.foundation.Canvas
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+
+//private val rotation = FloatPropKey()
 
 
 @Composable
 fun DragAndDropBoxes(modifier: Modifier = Modifier) {
+    var isPlaying by remember { mutableStateOf(true) }
     Column(modifier = Modifier.fillMaxSize()) {
 
         Row(
             modifier = modifier
-                .fillMaxWidth().weight(0.2f)
+                .fillMaxWidth()
+                .weight(0.2f)
         ) {
             val boxCount = 4
             var dragBoxIndex by remember {
@@ -71,7 +86,7 @@ fun DragAndDropBoxes(modifier: Modifier = Modifier) {
                             target = remember {
                                 object : DragAndDropTarget {
                                     override fun onDrop(event: DragAndDropEvent): Boolean {
-
+                                        isPlaying = !isPlaying
                                         dragBoxIndex = index
                                         return true
                                     }
@@ -114,15 +129,38 @@ fun DragAndDropBoxes(modifier: Modifier = Modifier) {
         }
 
 
-        Canvas(
+        val pOffset by animateIntOffsetAsState(
+            targetValue = when (isPlaying) {
+                true -> IntOffset(130, 300)
+                false -> IntOffset(130, 100)
+            },
+            animationSpec = tween(3000, easing = LinearEasing)
+        )
+
+        val rtatView by animateFloatAsState(
+            targetValue = if (isPlaying) 360f else 0.0f,
+            // Configure the animation duration and easing.
+            animationSpec = repeatable(
+                iterations = if (isPlaying) 10 else 1,
+                tween(durationMillis = 3000, easing = LinearEasing),
+                repeatMode = RepeatMode.Restart
+            )
+        )
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(0.8f)
                 .background(Color.Red)
-
         ) {
-                drawCircle(Color.Green, radius = 50f, center = Offset(100f, 100f))
-       }
+            Icon(
+                imageVector = Icons.Default.Face,
+                contentDescription = "Face",
+                modifier = Modifier
+                    .padding(10.dp)
+                    .offset(pOffset.x.dp, pOffset.y.dp)
+                    .rotate(rtatView)
+            )
+        }
     }
 }
 
