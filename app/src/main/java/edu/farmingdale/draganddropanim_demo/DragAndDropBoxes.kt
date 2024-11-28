@@ -81,15 +81,21 @@ fun DragAndDropBoxes(modifier: Modifier = Modifier) {
                         .border(1.dp, Color.Black)
                         .dragAndDropTarget(
                             shouldStartDragAndDrop = { event ->
-                                event
-                                    .mimeTypes()
-                                    .contains(ClipDescription.MIMETYPE_TEXT_PLAIN)
+                                event.mimeTypes().contains(ClipDescription.MIMETYPE_TEXT_PLAIN)
                             },
                             target = remember {
                                 object : DragAndDropTarget {
                                     override fun onDrop(event: DragAndDropEvent): Boolean {
                                         isPlaying = !isPlaying
                                         dragBoxIndex = index
+
+                                        // Enable animations based on drop direction
+                                        val dropDirection = event.position.y
+                                        if (dropDirection < 200) {
+                                            rectPosition = IntOffset(rectPosition.x, rectPosition.y - 100) // Move Up
+                                        } else {
+                                            rectPosition = IntOffset(rectPosition.x, rectPosition.y + 100) // Move Down
+                                        }
                                         return true
                                     }
                                 }
