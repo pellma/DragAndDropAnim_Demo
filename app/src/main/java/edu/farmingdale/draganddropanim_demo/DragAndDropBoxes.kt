@@ -51,13 +51,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
+import androidx.compose.material3.Button
 //private val rotation = FloatPropKey()
 
 
 @Composable
 fun DragAndDropBoxes(modifier: Modifier = Modifier) {
     var isPlaying by remember { mutableStateOf(true) }
+    var rectPosition by remember { mutableStateOf(IntOffset(130, 300)) }
+
     Column(modifier = Modifier.fillMaxSize()) {
 
         Row(
@@ -128,24 +130,32 @@ fun DragAndDropBoxes(modifier: Modifier = Modifier) {
             }
         }
 
+        Button(
+            onClick = {
+                rectPosition = IntOffset(0, 0)
+                isPlaying = false
+            },
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(16.dp)
+        ) {
+            Text("Reset Position")
+        }
 
         val pOffset by animateIntOffsetAsState(
-            targetValue = when (isPlaying) {
-                true -> IntOffset(130, 300)
-                false -> IntOffset(130, 100)
-            },
+            targetValue = rectPosition,
             animationSpec = tween(3000, easing = LinearEasing)
         )
 
         val rtatView by animateFloatAsState(
             targetValue = if (isPlaying) 360f else 0.0f,
-            // Configure the animation duration and easing.
             animationSpec = repeatable(
                 iterations = if (isPlaying) 10 else 1,
                 tween(durationMillis = 3000, easing = LinearEasing),
                 repeatMode = RepeatMode.Restart
             )
         )
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -163,4 +173,3 @@ fun DragAndDropBoxes(modifier: Modifier = Modifier) {
         }
     }
 }
-
